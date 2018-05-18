@@ -4,7 +4,7 @@ import scala.annotation.tailrec
 
 class Dijkstra(val a: Seq[Int]) {
   val cg = new CalcGains(a)
-  val costs: Map[Seq[Int], Int] = cg.costs.toMap
+  val costs: Map[Seq[Int], Int] = ??? //cg.costs.toMap
 
   type Graph[N] = N => Map[N, Int]
 

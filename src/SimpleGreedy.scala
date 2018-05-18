@@ -3,7 +3,7 @@ import scala.math.Ordering.Implicits._
 
 class SimpleGreedy(val a: Seq[Int]) {
   val cg = new CalcGains(a)
-  val costs: Map[Seq[Int], Int] = cg.costs.toMap
+  val costs: Map[Seq[Int], Int] = ??? //cg.costs.toMap
 
 //  println(cg.gains.toList.sortBy(_._1.toString))
 //  println(costs)

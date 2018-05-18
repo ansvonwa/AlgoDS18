@@ -5,7 +5,7 @@ class CalcGains(val a: Seq[Int], val identifier: Seq[Int]) {
   var maxByLen: mutable.Seq[Int] = mutable.Seq.fill[Int](a.size-1)(0)
 
   var gains: mutable.Map[Seq[Int], Int] = mutable.Map()
-  var costs: mutable.Map[Seq[Int], Int] = mutable.Map()
+//  var costs: mutable.Map[Seq[Int], Int] = mutable.Map()
 
   for (len <- 2 until a.size) {
     maxByLen(len-1) = maxByLen(len-2)
@@ -17,9 +17,15 @@ class CalcGains(val a: Seq[Int], val identifier: Seq[Int]) {
           maxByLen(len-1) = gain
       }
     }
-    for (left <- 0 until a.size - len)
-      for (mid <- left + 1 until left + len)
-        costs(Seq(left, mid, left + len).map(identifier)) = maxByLen(len-1) - gains(Seq(left, mid, left + len).map(identifier))
+//    for (left <- 0 until a.size - len)
+//      for (mid <- left + 1 until left + len)
+//        costs(Seq(left, mid, left + len).map(identifier)) = maxByLen(len-1) - gains(Seq(left, mid, left + len).map(identifier))
+  }
+
+  def costs(seq: Seq[Int], depth: Int): Int = {
+//    println(s"costs($seq, $depth) = "+(maxByLen(depth) - gains(seq)))
+    maxByLen(depth) - gains(seq)
+//    maxByLen(a.length-2) - gains(seq)
   }
 //  2 until a.size foreach (len => {
 //    maxByLen(len-1) = maxByLen(len-2)
@@ -48,6 +54,6 @@ class CalcGains(val a: Seq[Int], val identifier: Seq[Int]) {
 object CalcGains {
   def main(args: Array[String]): Unit = {
     println(new CalcGains(Input.seqFromSeed(234).take(5)).gains)
-    println(new CalcGains(Input.seqFromSeed(234).take(5)).costs)
+//    println(new CalcGains(Input.seqFromSeed(234).take(5)).costs)
   }
 }
