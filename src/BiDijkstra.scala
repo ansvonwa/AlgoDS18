@@ -13,46 +13,40 @@ class BiDijkstra(val a: Seq[Int]) {
     def go(activeFwd: PriorityMap[N, Int], activeRev: PriorityMap[N, Int],
            resFwd: Map[N, Int], resRev: Map[N, Int],
            predFwd: Map[N, N], predRev: Map[N, N],
-           upperBound: Int = Int.MaxValue): (Map[N, Int], Map[N, Int], Map[N, N], Map[N, N], Set[N]) =
+           upperBound: Int, lowerBndFwd: Int, lowerBndRev: Int): (Map[N, Int], Map[N, Int], Map[N, N], Map[N, N], Set[N]) =
       if (activeFwd.isEmpty || activeRev.isEmpty) (resFwd, resRev, predFwd, predRev, resFwd.keySet intersect resRev.keySet)
-      else if (upperBound == Int.MaxValue && (resFwd.keySet intersect resRev.keySet).nonEmpty) {//(resFwd, resRev, predFwd, predRev)//TODO check all below path len (=upper bound)
+      else if (upperBound == Int.MaxValue && (resFwd.keySet intersect resRev.keySet).nonEmpty) {
+        //(resFwd, resRev, predFwd, predRev)//TODO check all below path len (=upper bound)
         go(activeFwd, activeRev, resFwd, resRev, predFwd, predRev, {
           val any = (resFwd.keySet intersect resRev.keySet).head
-          println("new UPPERBOUND = "+(resFwd(any) + resRev(any)))
+          println("intersections = "+(resFwd.keySet intersect resRev.keySet))
+          println("new UPPERBOUND = " + (resFwd(any) + resRev(any)))
           resFwd(any) + resRev(any)
-        })
-//        // TODO REALLY check for better paths :/
-//        (resFwd, resRev, predFwd, predRev,
-//          (resFwd.keySet intersect resRev.keySet) union
-//            (activeFwd.keySet intersect resRev.keySet) union
-//            (resFwd.keySet intersect activeRev.keySet))
+        }, activeFwd.values.min, activeRev.values.min)
       } else if (resFwd.size <= resRev.size) {
-//        println("activeFwd: "+activeFwd)
-        val fwdBound = upperBound - activeRev.head._2
+        //        println("activeFwd: "+activeFwd)
+        val fwdBound = upperBound - lowerBndRev
         val (node, cost) = activeFwd.head
-        val neighbours = {
-            for {
+        val neighbours = for {
             (n, c) <- gFwd(node) if !resFwd.contains(n) &&
-              cost + c < activeFwd.getOrElse(n, Int.MaxValue)
+              cost + c < activeFwd.getOrElse(n, fwdBound)
           } yield n -> (cost + c)
-        }.filter(_._2 <= fwdBound)
         val preds = neighbours mapValues (_ => node)
-        go(activeFwd.tail ++ neighbours, activeRev, resFwd + (node -> cost), resRev, predFwd ++ preds, predRev, upperBound)
+//        val newLowerBndFwd = if (upperBound == Int.MaxValue) lowerBndFwd else
+        go(activeFwd.tail ++ neighbours, activeRev, resFwd + (node -> cost), resRev, predFwd ++ preds, predRev, upperBound, lowerBndFwd, lowerBndRev)
       } else {
-//        println("activeRev: "+activeRev)
-        val revBound = upperBound - activeRev.head._2
+        //        println("activeRev: "+activeRev)
+        val revBound = upperBound - lowerBndFwd
         val (node, cost) = activeRev.head
-        val neighbours = {
-          for {
-            (n, c) <- gRev(node) if !resRev.contains(n) &&
-              cost + c < activeRev.getOrElse(n, Int.MaxValue)
-          } yield n -> (cost + c)
-        }.filter(_._2 <= revBound)
+        val neighbours = for {
+          (n, c) <- gRev(node) if !resRev.contains(n) &&
+            cost + c < activeRev.getOrElse(n, revBound)
+        } yield n -> (cost + c)
         val preds = neighbours mapValues (_ => node)
-        go(activeFwd, activeRev.tail ++ neighbours, resFwd, resRev + (node -> cost), predFwd, predRev ++ preds, upperBound)
+        go(activeFwd, activeRev.tail ++ neighbours, resFwd, resRev + (node -> cost), predFwd, predRev ++ preds, upperBound, lowerBndFwd, lowerBndRev)
       }
 
-    go(PriorityMap(source -> 0), PriorityMap(goal -> 0), Map.empty, Map.empty, Map.empty, Map.empty)
+    go(PriorityMap(source -> 0), PriorityMap(goal -> 0), Map.empty, Map.empty, Map.empty, Map.empty, Int.MaxValue, 0, 0)
   }
 
 
@@ -69,14 +63,14 @@ class BiDijkstra(val a: Seq[Int]) {
     println(path)
     path.get.sliding(2).map(pair => {
       val j = pair.head.indexWhere(!pair.last.contains(_))
-      pair.head.slice(j-1, j+2)
+      pair.head.slice(j - 1, j + 2)
     }).map(cg.gains).sum
   }
 
   def transitions(path: List[Seq[Int]]): List[Seq[Int]] =
     path.sliding(2).map(pair => {
       val j = pair.head.indexWhere(!pair.last.contains(_))
-      pair.head.slice(j-1, j+2)
+      pair.head.slice(j - 1, j + 2)
     }).toList
 
   def shortestPath(gFwd: Graph[Seq[Int]], gRev: Graph[Seq[Int]])(source: Seq[Int], target: Seq[Int]): Option[List[Seq[Int]]] = {
@@ -91,7 +85,7 @@ class BiDijkstra(val a: Seq[Int]) {
       Some({
         intersection.map(mid =>
           iterateRight(mid)(predFwd.get).dropRight(1) ++ iterateRight(mid)(predRev.get).reverse
-        ).minBy(p => transitions(p).map(costs).sum)
+        ).maxBy(p => transitions(p).map(cg.gains).sum)
       })
     else None
   }
@@ -102,6 +96,7 @@ class BiDijkstra(val a: Seq[Int]) {
       case None => x :: acc
       case Some(y) => go(y, x :: acc)
     }
+
     go(x, List.empty)
   }
 
@@ -110,12 +105,12 @@ class BiDijkstra(val a: Seq[Int]) {
       .map(i => (seq.patch(i, Nil, 1), costs(seq.slice(i - 1, i + 2)))).toMap //.withDefaultValue(Int.MaxValue)
   lazy val graphRev: Graph[Seq[Int]] = seq =>
     (0 until seq.length - 1)
-      .flatMap(j => seq(j)+1 until seq(j+1) map (i => (seq.patch(j+1, Seq(i), 0), costs(Seq(seq(j), i, seq(j+1)))))).toMap
-//    seq.sliding(2).flatMap(reg => reg.head+1 until reg.last map())
-//    (1 until a.length - 1).filterNot(seq.contains)
-//      .map(i => (seq.patch(i, Seq(i), 0), costs(Seq(seq(i-1))))).toMap //.withDefaultValue(Int.MaxValue)
+      .flatMap(j => seq(j) + 1 until seq(j + 1) map (i => (seq.patch(j + 1, Seq(i), 0), costs(Seq(seq(j), i, seq(j + 1)))))).toMap
+  //    seq.sliding(2).flatMap(reg => reg.head+1 until reg.last map())
+  //    (1 until a.length - 1).filterNot(seq.contains)
+  //      .map(i => (seq.patch(i, Seq(i), 0), costs(Seq(seq(i-1))))).toMap //.withDefaultValue(Int.MaxValue)
 
-//  lazy val (_, _, predFwd, predRev, intersection) = dijkstra(graphFwd, graphRev)(a.indices.toList, Seq(0, a.size - 1))
+  //  lazy val (_, _, predFwd, predRev, intersection) = dijkstra(graphFwd, graphRev)(a.indices.toList, Seq(0, a.size - 1))
 
   println(gain(graphFwd, graphRev)(a.indices.toList, Seq(0, a.size - 1)))
 }
@@ -123,7 +118,7 @@ class BiDijkstra(val a: Seq[Int]) {
 object BiDijkstra {
   def main(args: Array[String]): Unit = {
     val start = System.currentTimeMillis()
-    new BiDijkstra(Input.seq(18, 321))
+    new BiDijkstra(Input.seq(10, 321))
     println(System.currentTimeMillis() - start)
   }
 }
