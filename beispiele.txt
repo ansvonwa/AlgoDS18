@@ -1,0 +1,48 @@
+Die folgenden Beispiele sind OHNE GARANTIE. Bitte posten Sie im Forum,
+wenn Sie Ergebnisse bestätigen können, bzw. auf welche anderen
+Ergebnisse Sie kommen.
+
+------
+
+java Prim 4 123
+a: 82 50 76 89 
+
+Gesamtgewinn bei Minimalvariante (immer Index 1 herauslösen): 28914
+
+bestGain = 28914
+steps: 1 1
+
+------
+
+java Prim 5 234
+a: 95 96 85 96 70
+
+Minimalvariante: 11257
+
+bestGain = 119801
+steps: 3 2 1
+
+-----
+
+java Prim 8 333
+a: 86 3 85 38 15 41 43 28
+
+Minimalvariante: 1099144
+
+bestGain = 1767804
+steps: 4 4 3 2 1 1
+
+----
+
+java Prim 10 4444
+a: 51 31 74 80 80 15 50 57 35 55
+
+bestGain = 2108478
+steps: 3 5 4 3 2 1 2 1 
+
+----
+java Prim 10 321
+a: 79 92 57 52 6 83 85 22 5 77
+
+bestGain = 2199622
+steps: 4 3 2 2 1 1 2 1
