@@ -3,6 +3,7 @@ import scala.collection.mutable
 class CalcGains(val a: Seq[Int], val identifier: Seq[Int]) {
   def this(a: Seq[Int]) = this(a, a.indices)
   var maxByLen: mutable.Seq[Int] = mutable.Seq.fill[Int](a.size-1)(0)
+  lazy val maxByMid: (Int => Int) = (1 until a.length-1).map(i => (i, gains.filterKeys(_(1) == i).values.max)).toMap
 
   var gains: mutable.Map[Seq[Int], Int] = mutable.Map()
 //  var costs: mutable.Map[Seq[Int], Int] = mutable.Map()
@@ -21,11 +22,13 @@ class CalcGains(val a: Seq[Int], val identifier: Seq[Int]) {
 //      for (mid <- left + 1 until left + len)
 //        costs(Seq(left, mid, left + len).map(identifier)) = maxByLen(len-1) - gains(Seq(left, mid, left + len).map(identifier))
   }
+//  maxByLen(a.size-2) = gains.filterKeys(seq => seq.head == 0 && seq.last == a.size-1).values.max
 
   def costs(seq: Seq[Int], depth: Int): Int = {
 //    println(s"costs($seq, $depth) = "+(maxByLen(depth) - gains(seq)))
-    maxByLen(depth) - gains(seq)
-//    maxByLen(a.length-2) - gains(seq)
+//    maxByLen(depth) - gains(seq)
+//    maxByMid(seq(1)) - gains(seq)
+    2*maxByLen(depth)+a.length*maxByMid(seq(1)) - (a.length+2)*gains(seq)
   }
 //  2 until a.size foreach (len => {
 //    maxByLen(len-1) = maxByLen(len-2)
