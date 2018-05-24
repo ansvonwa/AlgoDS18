@@ -1,0 +1,52 @@
+for lists with size ==3:
+store f***ing efficient: HashMap? (Array?)
+(consider that numbers may be < 10 only in calculation!)
+C(i) where i consists of the identifiers of all three numbers  // |...| << n^3
+# C'(bitmask, i) shall return C(<last allowed char before i><char at i><next allowed char after i>)
+
+for lists with size <=12:
+encode every identifier (~=index) of a remaining element in 5 bits
+save those longs in a HashMap with corresponding values
+hardcode rules for n (<=12) elements:
+D(abcd):=D(abc)+D(acd) + D(bcd)+D(acd)
+E(abcde):=C(abc)+D(acde) + C(bcd)+D(acde) + C(cde)+D(abce)
+...
+
+for lists with size > 12:
+save original array a and use only a bitmask to identify sublists
+store values in map (bitmask -> value)
+
+
+consider duplicate numbers (optional):
+before: create mask with doubled values with distances < n-12. Example:
+original: ****a**a****
+mask1:    000000010000
+mask2:    000011100000
+if ((y & mask1 != 0) && (y && mask2 == 0)),
+ then y does not need to be calculated at all
+  (because it is equivalent to x:=****1000**** (y=****0001****))
+
+
+
+
+=== === === === === ===
+@deprecated
+
+for lists with size ==3:
+store f***ing efficient: HashMap? (Array?)
+(consider that numbers may be < 10 only in calculation!)
+C(abc) // |...| << n^3
+C'(bitmask, i) shall return C(<last allowed char before i><char at i><next allowed char after i>)
+
+for lists with size <=8:
+encode every element in one byte (4 bits for first base-10-digit, 4 bits for second)
+save those longs in a HashMap with corresponding values
+hardcode rules for n (<=8) elements:
+D(abcd):=D(abc)+D(acd) + D(bcd)+D(acd)
+E(abcde):=C(abc)+D(acde) + C(bcd)+D(acde) + C(cde)+D(abce)
+...
+
+for lists with size > 8:
+save original array a and use only a bitmask to identify sublists
+store values in map (bitmask -> value)
+

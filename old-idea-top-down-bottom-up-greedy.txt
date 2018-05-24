@@ -1,0 +1,7 @@
+observation: transition graph is diamond-shaped
+
+idea: use heuristic (cost=maxreward-reward) to get cheap paths to the center of the diamond, then look for intersection
+ of those trees. Continue to expand all paths with cost < cost of path found.
+ Then, use heuristic to generate cheapest path and calculate reward (or calculate reward by max's - costs)
+
+Plan: implement in scala to keep flexibility
