@@ -56,7 +56,11 @@ class CalcGains(val a: Seq[Int], val identifier: Seq[Int]) {
 
 object CalcGains {
   def main(args: Array[String]): Unit = {
-    println(new CalcGains(Input.seqFromSeed(234).take(5)).gains)
+    val start = System.currentTimeMillis()
+    println(new CalcGains(Input.seqFromSeed(321).take(21)))
+    println(System.currentTimeMillis() - start)
+    println(Input.seqFromSeed(321).take(21).toList)
+    println(Input.seqFromSeed(123).take(21).toList)
 //    println(new CalcGains(Input.seqFromSeed(234).take(5)).costs)
   }
 }

@@ -4,7 +4,6 @@ import scala.annotation.tailrec
 
 class BiDijkstra(val a: Seq[Int]) {
   val cg = new CalcGains(a)
-//  val costs: Map[Seq[Int], Int] = cg.costs.toMap
   import cg.costs
 
   type Graph[N] = N => Map[N, Int]
@@ -15,18 +14,18 @@ class BiDijkstra(val a: Seq[Int]) {
            resFwd: Map[N, Int], resRev: Map[N, Int],
            predFwd: Map[N, N], predRev: Map[N, N],
            upperBound: Int, lowerBndFwd: Int, lowerBndRev: Int): (Map[N, Int], Map[N, Int], Map[N, N], Map[N, N], Set[N]) =
-      if (activeFwd.isEmpty || activeRev.isEmpty /*||
-          upperBound < lowerBndFwd + lowerBndRev*/) (resFwd, resRev, predFwd, predRev, resFwd.keySet intersect resRev.keySet)
-      else if (upperBound == Int.MaxValue && (resFwd.keySet intersect resRev.keySet).nonEmpty) {
+      if (activeFwd.isEmpty || activeRev.isEmpty)
+        (resFwd, resRev, predFwd, predRev, resFwd.keySet intersect resRev.keySet)
+//      else if (upperBound == Int.MaxValue && (resFwd.keySet intersect resRev.keySet).nonEmpty) {
+      else if (upperBound == Int.MaxValue && resFwd.keySet.exists(resRev.contains)) {//TODO improve (add lengths of longest paths) and measure performance
         go(activeFwd, activeRev, resFwd, resRev, predFwd, predRev, {
           val any = (resFwd.keySet intersect resRev.keySet).head
           println("intersections = "+(resFwd.keySet intersect resRev.keySet))
           println("new UPPERBOUND = " + (resFwd(any) + resRev(any)))
           resFwd(any) + resRev(any)
         }, activeFwd.values.min, activeRev.values.min)
-      } else if (resFwd.size <= resRev.size) {//(lowerBndFwd <= lowerBndRev) {
-        //        println("activeFwd: "+activeFwd)
-        println(upperBound + "   "+lowerBndFwd+"   "+lowerBndRev)
+      } else if (resFwd.size <= resRev.size) {// is better than (lowerBndFwd <= lowerBndRev) bc it prefers small fronts {
+//        println(upperBound + "   "+lowerBndFwd+"   "+lowerBndRev)
         val fwdBound = upperBound - lowerBndRev
         val (node, cost) = activeFwd.head
         val neighbours = for {
@@ -38,8 +37,7 @@ class BiDijkstra(val a: Seq[Int]) {
           if (upperBound == Int.MaxValue) upperBound else math.min(upperBound, cost+resRev.getOrElse(node, Int.MaxValue/2))
         }, cost, lowerBndRev)
       } else {
-        //        println("activeRev: "+activeRev)
-        println(upperBound + "   "+lowerBndFwd+"   "+lowerBndRev)
+//        println(upperBound + "   "+lowerBndFwd+"   "+lowerBndRev)
         val revBound = upperBound - lowerBndFwd
         val (node, cost) = activeRev.head
         val neighbours = for {
@@ -60,7 +58,8 @@ class BiDijkstra(val a: Seq[Int]) {
     println("dijkstra")
     val (_, _, predFwd, predRev, intersection) = dijkstra(gFwd, gRev)(source, target)
     println("gaincalc")
-    println("cost = "+(cg.maxByLen.sum + shortestPath(predFwd, predRev, intersection)(source, target).map(transitions).get.map(costs(_, 0)).sum))
+//    println("cost = "+(cg.maxByLen.sum + shortestPath(predFwd, predRev, intersection)(source, target).map(transitions).get.map(costs(_, 0)).sum))
+    println("buffersize: "+(predFwd.size + predRev.size))
     gain(predFwd, predRev, intersection)(source, target)
   }
 
@@ -120,14 +119,12 @@ class BiDijkstra(val a: Seq[Int]) {
   //  lazy val (_, _, predFwd, predRev, intersection) = dijkstra(graphFwd, graphRev)(a.indices.toList, Seq(0, a.size - 1))
 
   println(gain(graphFwd, graphRev)(a.indices.toList, Seq(0, a.size - 1)))
-  println(cg.maxByLen)
-  println(cg.maxByLen.sum)
 }
 
 object BiDijkstra {
   def main(args: Array[String]): Unit = {
     val start = System.currentTimeMillis()
-    new BiDijkstra(Input.seq(10, 321))
+    new BiDijkstra(Input.seq(18, 321))
     println(System.currentTimeMillis() - start)
   }
 }

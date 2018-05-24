@@ -1,0 +1,2 @@
+IDEA:
+split [l,...,x,...,r] into [l,...,x] and [x,...,r].
