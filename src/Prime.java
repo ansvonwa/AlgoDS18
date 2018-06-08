@@ -11,7 +11,13 @@ public class Prime {
 //        int seed = 321;
         long start = System.currentTimeMillis();
         while (System.currentTimeMillis() - start < n*n*1000) {
-            // wait n^2 seconds to not destroy the competition
+            // warm up jit
+            // warm up prime factor calculation
+            largestPrimeFac(new Random().nextInt(100),
+                    new Random().nextInt(100),
+                    new Random().nextInt(100));
+            // malloc and warm up gc
+            int[] arr = new int[10000];
         }
         Random random = new Random(seed);
         a = new int[n];
