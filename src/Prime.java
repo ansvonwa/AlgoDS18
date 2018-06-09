@@ -5,20 +5,9 @@ public class Prime {
     private static int[] a;
 
     public static void main(String[] args) {
-        int n = Integer.parseInt(args[0]);
-        int seed = Integer.parseInt(args[1]);
-//        int n = 10;
-//        int seed = 321;
+        int n = args.length > 0 ? Integer.parseInt(args[0]) : 10;
+        int seed = args.length > 1 ? Integer.parseInt(args[1]) : 321;
         long start = System.currentTimeMillis();
-        while (System.currentTimeMillis() - start < n*n*1000) {
-            // warm up jit
-            // warm up prime factor calculation
-            largestPrimeFac(new Random().nextInt(100),
-                    new Random().nextInt(100),
-                    new Random().nextInt(100));
-            // malloc and warm up gc
-            int[] arr = new int[10000];
-        }
         Random random = new Random(seed);
         a = new int[n];
         for (int i = 0; i < a.length; i++) {
@@ -26,10 +15,14 @@ public class Prime {
         }
         buf = new int[n][n];
 
-        System.out.println(gain(0, n - 1));
+        System.out.println(gain(0, n - 1));// 1k: 68782ms
+//        System.out.println(gainIt());// 1k: 69232ms
         System.out.print("steps:");
         printSteps(0, n - 1);
         System.out.println();
+
+        if (args.length == 0)
+            System.out.println(System.currentTimeMillis() - start);
     }
 
     private static int largestPrimeFac(int x, int b, int c) {
@@ -61,6 +54,27 @@ public class Prime {
                 a += 2;
         }
         return x;
+    }
+
+    private static int gainIt() {
+        final int n = a.length;
+        int[][] buf = new int[n][n];
+        int[] a = Prime.a;
+        for (int len = 2; len < n; len++) {
+            for (int from = 0; from < n - len; from++) {
+                final int to = from + len;
+                final int aFrom = a[from];
+                final int aTo = a[to];
+                int maxGain = 0;
+                for (int mid = from + 1; mid < to; mid++) {
+                    int curGain = buf[from][mid] + largestPrimeFac(aFrom, a[mid], aTo) + buf[mid][to];
+                    if (curGain > maxGain)
+                        maxGain = curGain;
+                }
+                buf[from][to] = maxGain;
+            }
+        }
+        return buf[0][n - 1];
     }
 
     private static int gain(int from, int to) {
