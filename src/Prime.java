@@ -1,8 +1,9 @@
+import java.util.ArrayList;
 import java.util.Random;
 
 public class Prime {
     private static int[][] buf;
-    private static int[] a;
+    public static int[] a;
 
     public static void main(String[] args) {
         int n = args.length > 0 ? Integer.parseInt(args[0]) : 10;
@@ -21,11 +22,20 @@ public class Prime {
         printSteps(0, n - 1);
         System.out.println();
 
-        if (args.length == 0)
+        if (args.length == 0) {
+            System.out.print("steps:");
+            printStepsMin();
+            System.out.println();
             System.out.println(System.currentTimeMillis() - start);
+        }
     }
 
-    private static int largestPrimeFac(int x, int b, int c) {
+    public static void init(int[] a) {
+        Prime.a = a;
+        Prime.buf = new int[a.length][a.length];
+    }
+
+    public static int largestPrimeFac(int x, int b, int c) {
         if (b < 10)
             x *= 10;
         else
@@ -56,7 +66,7 @@ public class Prime {
         return x;
     }
 
-    private static int gainIt() {
+    public static int gainIt() {
         final int n = a.length;
         int[][] buf = new int[n][n];
         int[] a = Prime.a;
@@ -74,10 +84,11 @@ public class Prime {
                 buf[from][to] = maxGain;
             }
         }
+        Prime.buf = buf;
         return buf[0][n - 1];
     }
 
-    private static int gain(int from, int to) {
+    public static int gain(int from, int to) {
         if (to - from < 2)
             return 0;
         int maxGain = buf[from][to];
@@ -92,7 +103,7 @@ public class Prime {
         return maxGain;
     }
 
-    private static void printSteps(int from, int to) {
+    public static void printSteps(int from, int to) {
         int maxMid = from + 1;
         int maxGain = -1;
         for (int mid = from + 1; mid < to; mid++) {
@@ -107,5 +118,38 @@ public class Prime {
         if (maxMid - from > 1)
             printSteps(from, maxMid);
         System.out.print(" " + (from + 1));
+    }
+
+    public static void printStepsMin() {
+        final int n = a.length;
+        ArrayList<Integer> global = stepsGlobal(0, n - 1);
+        System.out.print("steps:");
+        for (int i = 0; i < global.size(); i++) {
+            int shift = 0;
+            for (int j = 0; j < i; j++)
+                if (global.get(j) < global.get(i))
+                    shift++;
+            System.out.print(" " + (global.get(i) - shift));
+        }
+        System.out.println();
+    }
+
+    public static ArrayList<Integer> stepsGlobal(int from, int to) {
+        int maxMid = from + 1;
+        int maxGain = -1;
+        for (int mid = from + 1; mid < to; mid++) {
+            int curGain = buf[from][mid] + largestPrimeFac(a[from], a[mid], a[to]) + buf[mid][to];
+            if (curGain > maxGain) {
+                maxMid = mid;
+                maxGain = curGain;
+            }
+        }
+        ArrayList<Integer> steps = new ArrayList<>();
+        if (maxMid - from > 1)
+            steps.addAll(stepsGlobal(from, maxMid));
+        if (to - maxMid > 1)
+            steps.addAll(stepsGlobal(maxMid, to));
+        steps.add(maxMid);
+        return steps;
     }
 }
