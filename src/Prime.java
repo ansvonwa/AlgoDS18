@@ -15,7 +15,7 @@ public class Prime {
         }
         buf = new int[n][n];
 
-        System.out.println(gain(0, n - 1));// 1k: 68782ms
+        System.out.println("bestGain = " + gain(0, n - 1));// 1k: 68782ms
 //        System.out.println(gainIt());// 1k: 69232ms
         System.out.print("steps:");
         printSteps(0, n - 1);
