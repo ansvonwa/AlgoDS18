@@ -23,9 +23,7 @@ public class Prime {
         System.out.println();
 
         if (args.length == 0) {
-            System.out.print("steps:");
             printStepsMin();
-            System.out.println();
             System.out.println(System.currentTimeMillis() - start);
         }
     }
